@@ -114,15 +114,195 @@ function renderSidebar(activePage) {
         </aside>`;
 }
 
-async function apiFetch(endpoint, options = {}) {
-    const res = await fetch(API_BASE + endpoint, {
-        headers: { 'Content-Type': 'application/json', ...options.headers },
-        ...options
-    });
-    const data = await res.json().catch(() => ({}));
-    if (!res.ok) throw new Error(data.error || `Request failed (${res.status})`);
-    return data;
+
+// In-browser mock data for live static preview (e.g. GitHub Pages)
+const DEFAULT_MOCK_EMPLOYEES = [
+    { id: "EMP001", name: "Rajesh Kumar", type: "FullTime", department: "Engineering", designation: "Senior Software Engineer", baseSalary: 85000, bonus: 10000, allowance: 5000, hra: 34000, da: 17000, pf: 10200 },
+    { id: "EMP002", name: "Priya Sharma", type: "FullTime", department: "HR", designation: "HR Manager", baseSalary: 65000, bonus: 8000, allowance: 4000, hra: 26000, da: 13000, pf: 7800 },
+    { id: "EMP003", name: "Amit Patel", type: "Contractor", department: "Marketing", designation: "Marketing Consultant", baseSalary: 55000, bonus: 5000, allowance: 3000, contractMonths: 12, hourlyRate: 0, hoursWorked: 0 },
+    { id: "EMP004", name: "Sneha Reddy", type: "Intern", department: "Engineering", designation: "Software Intern", baseSalary: 25000, bonus: 2000, allowance: 1500, institute: "IIT Delhi", internshipDuration: 6, mentorId: "EMP001" },
+    { id: "EMP005", name: "Vikram Singh", type: "FullTime", department: "Finance", designation: "Financial Analyst", baseSalary: 70000, bonus: 7000, allowance: 3500, hra: 28000, da: 14000, pf: 8400 },
+    { id: "EMP006", name: "Anita Desai", type: "Contractor", department: "Operations", designation: "Operations Lead", baseSalary: 60000, bonus: 6000, allowance: 2500, contractMonths: 6, hourlyRate: 0, hoursWorked: 0 },
+    { id: "EMP007", name: "Rahul Mehta", type: "Intern", department: "Marketing", designation: "Marketing Intern", baseSalary: 20000, bonus: 1000, allowance: 1000, institute: "Delhi University", internshipDuration: 3, mentorId: "EMP003" },
+    { id: "EMP008", name: "Kavita Nair", type: "FullTime", department: "Engineering", designation: "Tech Lead", baseSalary: 120000, bonus: 15000, allowance: 8000, hra: 48000, da: 24000, pf: 14400 }
+];
+
+function getMockEmployees() {
+    const stored = localStorage.getItem('mockEmployees');
+    if (stored) {
+        try { return JSON.parse(stored); } catch (e) {}
+    }
+    localStorage.setItem('mockEmployees', JSON.stringify(DEFAULT_MOCK_EMPLOYEES));
+    return DEFAULT_MOCK_EMPLOYEES;
 }
+
+function saveMockEmployees(list) {
+    localStorage.setItem('mockEmployees', JSON.stringify(list));
+}
+
+function calculateEmployeeMockPayroll(emp) {
+    let gross = emp.baseSalary + (emp.bonus || 0) + (emp.allowance || 0);
+    let pf = 0;
+    let tax = 0;
+
+    if (emp.type === 'FullTime') {
+        gross += (emp.hra || 0) + (emp.da || 0);
+        pf = emp.pf || (emp.baseSalary * 0.12);
+        const annual = gross * 12;
+        let annualTax = 0;
+        if (annual > 1000000) annualTax += (annual - 1000000) * 0.30 + 400000 * 0.20 + 300000 * 0.10;
+        else if (annual > 600000) annualTax += (annual - 600000) * 0.20 + 300000 * 0.10;
+        else if (annual > 300000) annualTax += (annual - 300000) * 0.10;
+        tax = Math.round(annualTax / 12);
+    } else if (emp.type === 'Contractor') {
+        tax = Math.round(gross * 0.10);
+    } else if (emp.type === 'Intern') {
+        tax = Math.round(gross * 0.05);
+    }
+
+    const net = gross - tax - pf;
+    return { gross, tax, pf, net };
+}
+
+function handleMockRequest(endpoint, options) {
+    const employees = getMockEmployees();
+    const method = (options.method || 'GET').toUpperCase();
+
+    if (endpoint === '/api/dashboard') {
+        let total = 0;
+        let highest = 0;
+        let totalTax = 0;
+        employees.forEach(e => {
+            const p = calculateEmployeeMockPayroll(e);
+            total += p.net;
+            totalTax += p.tax;
+            if (p.gross > highest) highest = p.gross;
+        });
+        return {
+            totalEmployees: employees.length,
+            totalPayroll: Math.round(total),
+            averageSalary: employees.length ? Math.round(total / employees.length) : 0,
+            highestSalary: Math.round(highest),
+            totalTax: Math.round(totalTax)
+        };
+    }
+
+    if (endpoint === '/api/employees') {
+        if (method === 'POST') {
+            const body = JSON.parse(options.body || '{}');
+            employees.push(body);
+            saveMockEmployees(employees);
+            return { success: true, message: 'Employee added' };
+        }
+        return employees;
+    }
+
+    if (endpoint.startsWith('/api/employees/delete/')) {
+        const id = endpoint.split('/').pop();
+        const filtered = employees.filter(e => e.id !== id);
+        saveMockEmployees(filtered);
+        return { success: true };
+    }
+
+    if (endpoint.startsWith('/api/employees/update/')) {
+        const id = endpoint.split('/').pop();
+        const body = JSON.parse(options.body || '{}');
+        const idx = employees.findIndex(e => e.id === id);
+        if (idx !== -1) employees[idx] = { ...employees[idx], ...body };
+        saveMockEmployees(employees);
+        return { success: true };
+    }
+
+    if (endpoint.startsWith('/api/employees/')) {
+        const id = endpoint.split('/').pop();
+        const emp = employees.find(e => e.id === id);
+        if (emp) return emp;
+        throw new Error('Employee not found');
+    }
+
+    if (endpoint.startsWith('/api/payroll/')) {
+        const id = endpoint.split('/').pop();
+        const emp = employees.find(e => e.id === id);
+        if (!emp) throw new Error('Employee not found');
+        const calc = calculateEmployeeMockPayroll(emp);
+        return {
+            ...emp,
+            grossSalary: calc.gross,
+            taxAmount: calc.tax,
+            pfDeduction: calc.pf,
+            netSalary: calc.net
+        };
+    }
+
+    if (endpoint.startsWith('/api/payslip/')) {
+        const id = endpoint.split('/').pop();
+        const emp = employees.find(e => e.id === id);
+        if (!emp) throw new Error('Employee not found');
+        const calc = calculateEmployeeMockPayroll(emp);
+        return {
+            employee: emp,
+            breakdown: {
+                baseSalary: emp.baseSalary,
+                bonus: emp.bonus || 0,
+                allowance: emp.allowance || 0,
+                hra: emp.hra || 0,
+                da: emp.da || 0,
+                grossSalary: calc.gross,
+                taxDeduction: calc.tax,
+                pfDeduction: calc.pf,
+                totalDeductions: calc.tax + calc.pf,
+                netSalary: calc.net
+            }
+        };
+    }
+
+    if (endpoint === '/api/payroll-history') {
+        return [
+            { employeeId: "EMP001", name: "Rajesh Kumar", date: "2026-10-31", net: 125800 },
+            { employeeId: "EMP008", name: "Kavita Nair", date: "2026-10-31", net: 172600 },
+            { employeeId: "EMP005", name: "Vikram Singh", date: "2026-10-31", net: 98500 },
+            { employeeId: "EMP002", name: "Priya Sharma", date: "2026-10-31", net: 92400 }
+        ];
+    }
+
+    if (endpoint === '/api/analytics') {
+        const deptMap = {};
+        const typeMap = {};
+        employees.forEach(e => {
+            const p = calculateEmployeeMockPayroll(e);
+            deptMap[e.department] = (deptMap[e.department] || 0) + p.gross;
+            typeMap[e.type] = (typeMap[e.type] || 0) + 1;
+        });
+        return {
+            employeeCount: employees.length,
+            totalPayroll: Object.values(deptMap).reduce((a, b) => a + b, 0),
+            averageSalary: employees.length ? Math.round(Object.values(deptMap).reduce((a, b) => a + b, 0) / employees.length) : 0,
+            departmentBreakdown: deptMap,
+            typeDistribution: typeMap,
+            topPaidEmployees: employees.slice().sort((a, b) => b.baseSalary - a.baseSalary).slice(0, 5)
+        };
+    }
+
+    return {};
+}
+
+async function apiFetch(endpoint, options = {}) {
+    try {
+        const res = await fetch(API_BASE + endpoint, {
+            headers: { 'Content-Type': 'application/json', ...options.headers },
+            ...options
+        });
+        if (res.status === 404) throw new Error("Endpoint returned 404 (static preview)");
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) throw new Error(data.error || `Request failed (${res.status})`);
+        return data;
+    } catch (err) {
+        // Fallback gracefully to demo mock data on static hosts (like GitHub Pages)
+        console.info(`Using interactive client-side demo for ${endpoint}`);
+        return handleMockRequest(endpoint, options);
+    }
+}
+
 
 async function loadDashboard() {
     try {
