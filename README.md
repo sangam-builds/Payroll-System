@@ -9,13 +9,13 @@
 ![Chart.js](https://img.shields.io/badge/Chart.js-4.0-FF6384?style=for-the-badge&logo=chartdotjs&logoColor=white)
 ![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)
 ![Build](https://img.shields.io/badge/Build-Passing-brightgreen?style=for-the-badge)
-![Render](https://img.shields.io/badge/Render-Deploy%20Ready-46E3B7?style=for-the-badge&logo=render&logoColor=white)
+[![Live Demo](https://img.shields.io/badge/Live%20Demo-payroll--system--irz1.onrender.com-success?style=for-the-badge&logo=render&logoColor=white)](https://payroll-system-irz1.onrender.com)
 
 <p align="center">
   <strong>A modern, high-performance web application featuring a robust C++17 Object-Oriented backend paired with an elegant, responsive Bootstrap 5 dashboard for comprehensive corporate payroll, progressive tax computation, and employee lifecycle management.</strong>
 </p>
 
-[**🌐 Live Online Demo**](https://sangam-builds.github.io/Payroll-System/) • [**🚀 Deploy to Render**](#-deploy-to-render-cloud-hosting) • [**⚡ Quick Start**](#-quick-start) • [**📖 User Guide**](#-how-to-use) • [**🧠 OOP Architecture**](#-object-oriented-programming-oop-design)
+[**🚀 Live Demo (Render)**](https://payroll-system-irz1.onrender.com) • [**🌐 GitHub Pages Preview**](https://sangam-builds.github.io/Payroll-System/) • [**⚡ Quick Start**](#-quick-start) • [**📖 User Guide**](#-how-to-use) • [**🧠 OOP Architecture**](#-object-oriented-programming-oop-design)
 
 ---
 
@@ -27,9 +27,10 @@ You can test and explore **PayrollPro** immediately through both online and loca
 
 | Channel | Link / Command | Description |
 | :--- | :--- | :--- |
-| **🌐 Online Web Demo** | [**Try Live Demo on GitHub Pages**](https://sangam-builds.github.io/Payroll-System/) | Instant interactive browser preview (zero installation required) |
+| **🚀 Live Cloud App** | [**https://payroll-system-irz1.onrender.com**](https://payroll-system-irz1.onrender.com) | **Official production deployment** running full C++ backend & frontend on Render |
+| **🌐 GitHub Pages Preview** | [**Try Live Demo on GitHub Pages**](https://sangam-builds.github.io/Payroll-System/) | Interactive client-side browser preview |
 | **💻 Local Server** | `http://localhost:8085/` | High-performance C++ backend server running locally |
-| **🚀 One-Click Run** | Double-click `run.bat` | Auto-launches server and opens your default browser |
+| **⚡ One-Click Run** | Double-click `run.bat` | Auto-launches local server and opens your default browser |
 
 ### 🔑 Demo Login Credentials
 
@@ -236,7 +237,7 @@ If you prefer setting it up manually on Render:
    - **Value:** `10000`
 5. Click **Deploy Web Service**.
 
-Render will compile the C++17 backend, package the static frontend assets, and launch your server at `https://payroll-system-xxxx.onrender.com`.
+Render will compile the C++17 backend, package the static frontend assets, and launch your server at `https://payroll-system-irz1.onrender.com`.
 
 ---
 
