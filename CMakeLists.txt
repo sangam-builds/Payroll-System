@@ -44,7 +44,9 @@ target_include_directories(payroll_server PRIVATE
     ${asio_SOURCE_DIR}/asio/include
 )
 
-target_link_libraries(payroll_server PRIVATE Crow::Crow)
+find_package(Threads REQUIRED)
+
+target_link_libraries(payroll_server PRIVATE Crow::Crow Threads::Threads)
 
 if(WIN32)
     target_link_libraries(payroll_server PRIVATE ws2_32 wsock32 mswsock)

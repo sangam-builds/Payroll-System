@@ -1,0 +1,22 @@
+# Build artifacts
+build/
+CMakeFiles/
+CMakeCache.txt
+*.obj
+*.o
+*.exe
+
+# Version control & IDE
+.git/
+.gitignore
+.vscode/
+.idea/
+
+# Windows scripts and binaries
+run.bat
+*.zip
+
+# Brain/assistant files
+.gemini/
+scratch/
+

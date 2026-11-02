@@ -9,12 +9,13 @@
 ![Chart.js](https://img.shields.io/badge/Chart.js-4.0-FF6384?style=for-the-badge&logo=chartdotjs&logoColor=white)
 ![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)
 ![Build](https://img.shields.io/badge/Build-Passing-brightgreen?style=for-the-badge)
+![Render](https://img.shields.io/badge/Render-Deploy%20Ready-46E3B7?style=for-the-badge&logo=render&logoColor=white)
 
 <p align="center">
   <strong>A modern, high-performance web application featuring a robust C++17 Object-Oriented backend paired with an elegant, responsive Bootstrap 5 dashboard for comprehensive corporate payroll, progressive tax computation, and employee lifecycle management.</strong>
 </p>
 
-[**🌐 Live Online Demo**](https://sangam-builds.github.io/Payroll-System/) • [**⚡ Quick Start**](#-quick-start) • [**📖 User Guide**](#-how-to-use) • [**🧠 OOP Architecture**](#-object-oriented-programming-oop-design) • [**🔌 API Reference**](#-rest-api-reference)
+[**🌐 Live Online Demo**](https://sangam-builds.github.io/Payroll-System/) • [**🚀 Deploy to Render**](#-deploy-to-render-cloud-hosting) • [**⚡ Quick Start**](#-quick-start) • [**📖 User Guide**](#-how-to-use) • [**🧠 OOP Architecture**](#-object-oriented-programming-oop-design)
 
 ---
 
@@ -190,6 +191,55 @@ Open [**http://localhost:8085**](http://localhost:8085) in your web browser.
 
 ---
 
+
+---
+
+## 🚀 Deploy to Render (Cloud Hosting)
+
+The repository is fully pre-configured for **Render** with a multi-stage `Dockerfile` and a 1-click `render.yaml` Blueprint.
+
+### Option A: 1-Click Blueprint Deploy (Recommended)
+
+1. Push this repository to your GitHub account:
+   ```bash
+   git add .
+   git commit -m "Configure for Render deployment"
+   git push origin main
+   ```
+2. Log into [Render Dashboard](https://dashboard.render.com/).
+3. Click **New +** in the top right corner and choose **Blueprint**.
+4. Connect your GitHub repository (`Payroll-System`).
+5. Render will automatically detect [`render.yaml`](file:///d:/kundan/Payroll-System/render.yaml) and configure:
+   - **Environment:** Docker
+   - **Plan:** Free
+   - **Health Check:** `/`
+   - **Port:** `10000` (auto-mapped via `$PORT`)
+6. Click **Apply** — Render will build the container and deploy your live URL!
+
+---
+
+### Option B: Manual Web Service Setup
+
+If you prefer setting it up manually on Render:
+
+1. In Render Dashboard, click **New +** > **Web Service**.
+2. Connect your `Payroll-System` repository.
+3. Configure the following fields:
+   - **Name:** `payroll-system`
+   - **Region:** Any (e.g. *Oregon, USA* or *Frankfurt, Germany*)
+   - **Branch:** `main`
+   - **Runtime:** `Docker`
+   - **Dockerfile Path:** `./Dockerfile`
+   - **Instance Type:** `Free`
+4. Expand **Advanced** and add an Environment Variable:
+   - **Key:** `PORT`
+   - **Value:** `10000`
+5. Click **Deploy Web Service**.
+
+Render will compile the C++17 backend, package the static frontend assets, and launch your server at `https://payroll-system-xxxx.onrender.com`.
+
+---
+
 ## 📁 Project Directory Structure
 
 ```text
@@ -219,6 +269,9 @@ Payroll-System/
 │   ├── payroll.txt           # Historical salary disbursement records
 │   └── logs.txt              # System transaction audit trail
 ├── index.html                # Root redirect for GitHub Pages deployment
+├── Dockerfile                # Multi-stage production container for Render / Docker
+├── render.yaml               # Render Infrastructure as Code (Blueprint)
+├── .dockerignore             # Docker build context exclusions
 ├── run.bat                   # 1-Click Launch Automation for Windows
 ├── CMakeLists.txt            # CMake Build Configuration & Dependency Fetcher
 └── README.md                 # Project Documentation

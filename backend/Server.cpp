@@ -7,6 +7,7 @@
 #include <fstream>
 #include <sstream>
 #include <filesystem>
+#include <cstdlib>
 
 static PayrollSystem payrollSystem;
 
@@ -416,7 +417,14 @@ CROW_ROUTE(app, "/api/employees")
     });
 
     uint16_t port = 8085;
-    if (argc > 1) {
+    const char* env_port = std::getenv("PORT");
+    if (env_port != nullptr && std::string(env_port).length() > 0) {
+        try {
+            port = static_cast<uint16_t>(std::stoi(env_port));
+        } catch (...) {
+            port = 8085;
+        }
+    } else if (argc > 1) {
         try {
             port = static_cast<uint16_t>(std::stoi(argv[1]));
         } catch (...) {
@@ -426,10 +434,10 @@ CROW_ROUTE(app, "/api/employees")
 
     std::cout << "============================================" << std::endl;
     std::cout << "  Payroll & Tax Management System" << std::endl;
-    std::cout << "  Server running at http://localhost:" << port << std::endl;
+    std::cout << "  Server running on port: " << port << std::endl;
     std::cout << "  Login: admin / admin123" << std::endl;
     std::cout << "============================================" << std::endl;
     std::cout << "Route registration completed!" << std::endl;
-    app.port(port).multithreaded().run();
+    app.bindaddr("0.0.0.0").port(port).multithreaded().run();
     return 0;
 }
